@@ -1,0 +1,34 @@
+name: Deploy to Staging and Production
+
+on:
+  push:
+    branches:
+      - master 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build application
+        run: echo "Building application..." 
+      - name: ls command
+        run: ls -la
+      - name: Start script build
+        run: sh build_script.sh
+
+  deploy-to-staging:
+    runs-on: ubuntu-latest
+    environment: staging 
+    needs: build 
+    steps:
+      - name: Deploy to Staging
+        run: echo "Deploying to staging environment..." 
+
+  deploy-to-production:
+    runs-on: ubuntu-latest
+    environment: production 
+    needs: deploy-to-staging 
+    steps:
+      - name: Deploy to Production
+        run: echo "Deploying to production environment..."
