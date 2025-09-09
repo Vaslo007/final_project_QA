@@ -45,9 +45,6 @@ jobs:
       - name: Do sh script
         run: sh scripts/final.sh
 
-        - name: postman
-        run: json postman/Test_Environment.postman_environment.json
-
 
 
 
