@@ -1,7 +1,4 @@
-
-
-name: Final CI
-
+name: Age Check Script CI
 
 on:
   push:
@@ -9,42 +6,68 @@ on:
   pull_request:
     branches: [ "main" ]
 
-
 jobs:
-  test_job:
+  test_age_script:
     runs-on: ubuntu-latest
+    name: Test Age Check Script
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Make script executable
+        run: chmod +x scripts/age_check.sh
 
-      - name: Run a multi-line script
+      - name: Test with valid age (child)
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          echo "12" | ./scripts/age_check.sh | grep -q "Вы ребенок" && echo "✓ Child test passed" || (echo "✗ Child test failed" && exit 1)
 
-      - name: Do ls command
-        run: ls -la
-  
-  start_script_sh:
+      - name: Test with valid age (teenager)
+        run: |
+          echo "16" | ./scripts/age_check.sh | grep -q "Вы подросток" && echo "✓ Teenager test passed" || (echo "✗ Teenager test failed" && exit 1)
+
+      - name: Test with valid age (adult)
+        run: |
+          echo "25" | ./scripts/age_check.sh | grep -q "Вы взрослый" && echo "✓ Adult test passed" || (echo "✗ Adult test failed" && exit 1)
+
+      - name: Test with negative age
+        run: |
+          echo "-5" | ./scripts/age_check.sh | grep -q "не может быть отрицательным" && echo "✓ Negative age test passed" || (echo "✗ Negative age test failed" && exit 1)
+
+      - name: Test with non-numeric input
+        run: |
+          echo "abc" | ./scripts/age_check.sh 2>&1 | grep -q "введите целое число" && echo "✓ Non-numeric test passed" || (echo "✗ Non-numeric test failed" && exit 1)
+
+      - name: Test script execution permission
+        run: |
+          if [ -x "./scripts/age_check.sh" ]; then
+            echo "✓ Script is executable"
+          else
+            echo "✗ Script is not executable"
+            exit 1
+          fi
+
+      - name: Test script syntax
+        run: |
+          bash -n ./scripts/age_check.sh && echo "✓ Syntax check passed" || (echo "✗ Syntax check failed" && exit 1)
+
+      - name: Show script content
+        run: cat ./scripts/age_check.sh
+
+  manual_test:
     runs-on: ubuntu-latest
+    name: Manual Interactive Test
+    if: ${{ always() }}  # Runs even if previous jobs fail
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Make script executable
+        run: chmod +x scripts/age_check.sh
 
-      - name: Run a multi-line script
+      - name: Manual test instruction
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-
-      - name: Do sh script
-        run: sh scripts/final.sh
-
-
-
-
+          echo "For manual testing, run:"
+          echo "echo '25' | ./scripts/age_check.sh"
+          echo "Or interactively: ./scripts/age_check.sh"
